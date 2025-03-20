@@ -1,0 +1,12 @@
+Project Name :- "BUS Ticket booking system"
+
+	Using multithreads developing application 
+		1. To Book Tickets
+		2. To check whether seats are available
+		3. To get the total number of seats available
+		4. To get Total number of seats booked
+
+		In this project we can achieve like multicore optimization of application to get fast and very responsiveness while using that application
+
+		multiple cores are used 
+		cache memory is also used depends on availabilty

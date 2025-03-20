@@ -1,0 +1,60 @@
+***************************************************************
+09-01-2025
+***********************************************************
+q1.Wacp for addition of 2 matrix of order nxn
+	size of matrix is 1000x1000
+	dont use random func to populate matrix use your own function
+	also find the time taken to exection
+
+q2 multiplication
+
+	row wise addition 
+	column wise addition
+
+write comment and brief it
+
+take your own timer to calculate execution time
+
+**************************************************************
+16 - 01 -2025
+**************************************************************
+q1 . populate the integer array of length 1000 using random number
+	create 2 thread  
+	1st thread search total count of number more than 100
+	2nd thread should display each element
+
+q2. write a multi threaded program that will find repetation of number in nxn matrics
+	initialization of the matrics should be done in the parallel region,but done by one thread.
+	the number to be searched should be entered by user before entering the parallel region
+
+
+/************************************************
+06-02-2025
+***************************************************/
+
+q1.write a multithreaded pgm to multiply every element in an array by a constant number
+	create 4 thread and print the thread number with the each multiplication that thread has done
+
+q2. WAMP to add two arrays create 4  threads and print the thread number with each computation that is performed
+
+	create 2 function 1.add two array
+			2. multiply two array
+			
+	wap to call these function in two seperate threads with their ids
+	
+q3.WAMP to multiply every element in array by constant
+	the even number thread should multiply element in the even indices of array
+	odd number thread should multiply the element present in odd indices of array
+
+q4.WAmP that will take two number as input from user num1,num2
+	pgm should list out the number between 0 and number2 which is divisible by number1
+	
+
+*****************************************************************************************/
+*13-02-2025
+*****************************************************************************************/
+   
+
+
+
+
