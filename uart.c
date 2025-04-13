@@ -1,7 +1,13 @@
-/* Task based UART demo, using queued communication.
+/* Task based USART demo:
+ * Warren Gay VE3WWG
  *
- *	TX:	A9  ====> RX of TTL serial
- *	RX:	A10 <==== TX of TTL serial (not used)
+ * This simple demonstration runs from task1, writing 012...XYZ lines
+ * one after the other, at a rate of 5 characters/second. This demo
+ * uses usart_send_blocking() to write characters.
+ *
+ * STM32F103C8T6:
+ *	TX:	A9  <====> RX of TTL serial
+ *	RX:	A10 <====> TX of TTL serial
  *	CTS:	A11 (not used)
  *	RTS:	A12 (not used)
  *	Config:	8N1
@@ -12,16 +18,12 @@
  */
 #include <FreeRTOS.h>
 #include <task.h>
-#include <queue.h>
-
 #include <libopencm3/stm32/rcc.h>
 #include <libopencm3/stm32/gpio.h>
 #include <libopencm3/stm32/usart.h>
 
-static QueueHandle_t uart_txq;		// TX queue for UART
-
 /*********************************************************************
- * Configure and initialize USART1:
+ * Setup the UART
  *********************************************************************/
 static void
 uart_setup(void) {
@@ -42,81 +44,74 @@ uart_setup(void) {
 	usart_set_parity(USART1,USART_PARITY_NONE);
 	usart_set_flow_control(USART1,USART_FLOWCONTROL_NONE);
 	usart_enable(USART1);
-
-	// Create a queue for data to transmit from UART
-	uart_txq = xQueueCreate(256,sizeof(char));
 }
 
 /*********************************************************************
- * USART Task: 
+ * Send one character to the UART
+ *********************************************************************/
+static inline void
+uart_putc(char ch) {
+	usart_send_blocking(USART1,ch);
+}
+
+/*********************************************************************
+ * Send characters to the UART, slowly
  *********************************************************************/
 static void
-uart_task(void *args __attribute__((unused))) {
-	char ch;
+task1(void *args __attribute__((unused))) {
+	int c = '0' - 1;
 
 	for (;;) {
-		// Receive char to be TX
-		if ( xQueueReceive(uart_txq,&ch,500) == pdPASS ) {
-			while ( !usart_get_flag(USART1,USART_SR_TXE) )
-				taskYIELD();	// Yield until ready
-			usart_send(USART1,ch);
-		}
-		// Toggle LED to show signs of life
 		gpio_toggle(GPIOC,GPIO13);
+		vTaskDelay(pdMS_TO_TICKS(200));
+/*		if ( ++c >= 'Z' ) {
+			uart_putc(c);
+			uart_putc('\r');
+			uart_putc('\n');
+			c = '0' - 1;
+		} else	{
+			uart_putc(c);
+		}*/
+		uart_putc(B);
+		
+		uart_putc(H);
+		uart_putc(A);
+		uart_putc(N);
+		uart_putc(A);
+		uart_putc(V);
+		uart_putc(' ');
+		uart_putc(H);
+		uart_putc(E);
+		uart_putc(G);
+		uart_putc(D);
+		uart_putc(E);
+		uart_putc('\n');
 	}
 }
 
 /*********************************************************************
- * Queue a string of characters to be TX
- *********************************************************************/
-static void
-uart_puts(const char *s) {
-	
-	for ( ; *s; ++s ) {
-		// blocks when queue is full
-		xQueueSend(uart_txq,s,portMAX_DELAY); 
-	}
-}
-
-/*********************************************************************
- * Demo Task:
- *	Simply queues up two line messages to be TX, one second
- *	apart.
- *********************************************************************/
-static void
-demo_task(void *args __attribute__((unused))) {
-
-	for (;;) {
-		uart_puts("With Love\n\r");
-		uart_puts(" Bhanav Hegde \n\n\r");
-		vTaskDelay(pdMS_TO_TICKS(1000));
-	}
-}
-
-/*********************************************************************
- * Main program & scheduler:
+ * Main program
  *********************************************************************/
 int
 main(void) {
 
-	rcc_clock_setup_in_hse_8mhz_out_72mhz();	// CPU clock is 72 MHz
+	rcc_clock_setup_in_hse_8mhz_out_72mhz(); // Blue pill
 
-	// GPIO PC13:
+	// PC13:
 	rcc_periph_clock_enable(RCC_GPIOC);
 	gpio_set_mode(
 		GPIOC,
-		GPIO_MODE_OUTPUT_2_MHZ,
-		GPIO_CNF_OUTPUT_PUSHPULL,
-		GPIO13);
+                GPIO_MODE_OUTPUT_2_MHZ,
+                GPIO_CNF_OUTPUT_PUSHPULL,
+                GPIO13);
 
 	uart_setup();
 
-	xTaskCreate(uart_task,"UART",100,NULL,configMAX_PRIORITIES-1,NULL);
-	xTaskCreate(demo_task,"DEMO",100,NULL,configMAX_PRIORITIES-1,NULL);
-
+	xTaskCreate(task1,"task1",100,NULL,configMAX_PRIORITIES-1,NULL);
 	vTaskStartScheduler();
+
 	for (;;);
 	return 0;
 }
 
-/* End */
+// End
